@@ -186,7 +186,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     user_name VARCHAR(100) NOT NULL,
     meeting_id INT,
     action_item_id INT,
-    type ENUM('assigned', 'reassigned', 'due_reminder_24h', 'due_reminder_3d', 'overdue', 'escalation') NOT NULL,
+    type ENUM('assigned', 'reassigned', 'due_date_change', 'due_reminder_24h', 'due_reminder_3d', 'overdue', 'escalation') NOT NULL,
     message TEXT NOT NULL,
     is_read BOOLEAN DEFAULT FALSE,
     idempotency_key VARCHAR(255) UNIQUE,        -- Prevents duplicate notifications

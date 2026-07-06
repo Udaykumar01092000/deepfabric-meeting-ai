@@ -66,6 +66,31 @@ async function notifyAssignment(actionItem, meetingId, extractionRunId, isReassi
 }
 
 /**
+ * Notify owner when an action item due date changes.
+ */
+async function notifyDueDateChange(actionItem, meetingId, oldDueDate, newDueDate) {
+    if (!actionItem.owner || actionItem.owner === "Unassigned") return;
+    if (!newDueDate) return;
+
+    const oldStr = oldDueDate ? new Date(oldDueDate).toISOString().split('T')[0] : "none";
+    const newStr = new Date(newDueDate).toISOString().split('T')[0];
+
+    if (oldStr === newStr) return;
+
+    const key = `${actionItem.id}:due_date_change:${newStr}`;
+    const message = `Due date changed for: "${actionItem.task_text || actionItem.taskText}" (was: ${oldStr === "none" ? "not set" : oldStr}, now: ${newStr})`;
+
+    await createNotification({
+        userName: actionItem.owner,
+        meetingId,
+        actionItemId: actionItem.id,
+        type: "due_date_change",
+        message,
+        idempotencyKey: key,
+    });
+}
+
+/**
  * Check all action items for upcoming due dates and create reminders.
  * Called periodically or after extraction.
  */
@@ -236,6 +261,7 @@ async function simulateExternalNotification(userName, type, message) {
 module.exports = {
     createNotification,
     notifyAssignment,
+    notifyDueDateChange,
     checkDueReminders,
     checkOverdueItems,
     getNotifications,

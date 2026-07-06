@@ -79,14 +79,14 @@ export default function Inbox() {
     const statusColors: Record<string, string> = { open: "#ef4444", "in-progress": "#6366f1", done: "#10b981" };
 
     return (
-        <div style={{ padding: "0 48px 48px" }} className="animate-fade-in">
+        <div className="responsive-page animate-fade-in">
             {/* Header */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
+            <div className="page-header" style={{ marginBottom: "32px" }}>
                 <div>
-                    <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "36px", fontWeight: 800, margin: 0, letterSpacing: "-1px" }}>
+                    <h1 className="page-title" style={{ fontFamily: "var(--font-heading)", fontWeight: 800, margin: 0, letterSpacing: "-1px" }}>
                         My <span className="gradient-text">Inbox</span>
                     </h1>
-                    <p style={{ color: "var(--text-secondary)", marginTop: "6px" }}>
+                    <p className="page-subtitle" style={{ color: "var(--text-secondary)", marginTop: "6px" }}>
                         Personal action items, due tasks, and follow-ups across all meetings.
                     </p>
                 </div>
@@ -101,7 +101,7 @@ export default function Inbox() {
             </div>
 
             {/* Summary Cards */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px", marginBottom: "32px" }}>
+            <div className="summary-grid" style={{ gap: "16px", marginBottom: "32px" }}>
                 {sections.map(s => (
                     <button key={s.key} onClick={() => setActiveSection(s.key)}
                         className="glass-panel" style={{

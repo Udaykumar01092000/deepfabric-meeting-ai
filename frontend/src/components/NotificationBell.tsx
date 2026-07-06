@@ -46,6 +46,7 @@ export default function NotificationBell({ currentUser }: NotificationBellProps)
         switch (type) {
             case "assigned": return "📌";
             case "reassigned": return "🔄";
+            case "due_date_change": return "📆";
             case "due_reminder_24h": return "⏳";
             case "due_reminder_3d": return "📅";
             case "overdue": return "🚨";

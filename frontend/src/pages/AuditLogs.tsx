@@ -42,10 +42,10 @@ export default function AuditLogs() {
     };
 
     return (
-        <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "0 24px 48px" }} className="animate-fade-in">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
+        <div style={{ maxWidth: "1000px", margin: "0 auto" }} className="responsive-page animate-fade-in">
+            <div className="page-header" style={{ marginBottom: "32px" }}>
                 <div>
-                    <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "36px", fontWeight: 800, margin: 0, letterSpacing: "-1px" }}>
+                    <h1 className="page-title" style={{ fontFamily: "var(--font-heading)", fontWeight: 800, margin: 0, letterSpacing: "-1px" }}>
                         Audit <span className="gradient-text">Trail</span>
                     </h1>
                     <p style={{ color: "var(--text-secondary)", marginTop: "6px" }}>
@@ -59,8 +59,8 @@ export default function AuditLogs() {
             </div>
 
             {/* Filters */}
-            <div style={{ display: "flex", gap: "16px", marginBottom: "32px", flexWrap: "wrap", alignItems: "center" }}>
-                <div style={{ position: "relative", flex: 1, minWidth: "260px" }}>
+            <div className="filter-bar" style={{ marginBottom: "32px" }}>
+                <div className="search-shell" style={{ position: "relative", flex: 1, minWidth: "260px", marginBottom: 0 }}>
                     <input type="text" placeholder="Search by action, entity type, or details..." value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)} className="form-input"
                         style={{ width: "100%", boxSizing: "border-box", paddingLeft: "40px" }} />
@@ -69,7 +69,7 @@ export default function AuditLogs() {
                         <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
                     </svg>
                 </div>
-                <div style={{ display: "flex", gap: "4px", background: "var(--bg-tertiary)", padding: "4px", borderRadius: "10px" }}>
+                <div className="filter-chip-group">
                     {(["ALL", "CREATED", "UPDATED", "DELETED", "EXTRACTION"] as const).map(t => (
                         <button key={t} onClick={() => setFilterType(t)}
                             style={{
@@ -116,15 +116,15 @@ export default function AuditLogs() {
                                 <div style={{ position: "absolute", left: "-31px", top: "4px", width: "20px", height: "20px", borderRadius: "50%", background: "var(--bg-primary)", border: `3px solid ${color}`, boxShadow: `0 0 10px ${color}40`, zIndex: 2 }}></div>
                                 <div className="glass-panel" style={{ padding: "16px 20px", background: "rgba(255,255,255,0.015)", border: "1px solid rgba(255,255,255,0.04)" }}>
                                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px", flexWrap: "wrap" }}>
-                                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                                            <span style={{ fontSize: "16px" }}>{icon}</span>
-                                            <span style={{ fontSize: "14px", fontWeight: 700, color }}>{log.action}</span>
-                                            <span className="badge badge-indigo" style={{ fontSize: "10px" }}>{log.entity_type}</span>
-                                            {log.entity_id && <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>#{log.entity_id}</span>}
+                                        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", minWidth: 0 }}>
+                                            <span style={{ fontSize: "16px", flexShrink: 0 }}>{icon}</span>
+                                            <span style={{ fontSize: "14px", fontWeight: 700, color, wordBreak: "break-word" }}>{log.action}</span>
+                                            <span className="badge badge-indigo" style={{ fontSize: "10px", flexShrink: 0 }}>{log.entity_type}</span>
+                                            {log.entity_id && <span style={{ fontSize: "11px", color: "var(--text-muted)", flexShrink: 0 }}>#{log.entity_id}</span>}
                                         </div>
-                                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                            <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>{log.changed_by}</span>
-                                            <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                                        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", justifyContent: "flex-end", minWidth: 0 }}>
+                                            <span style={{ fontSize: "12px", color: "var(--text-muted)", wordBreak: "break-word" }}>{log.changed_by}</span>
+                                            <span style={{ fontSize: "11px", color: "var(--text-muted)", wordBreak: "break-word" }}>
                                                 {new Date(log.created_at).toLocaleString()}
                                             </span>
                                         </div>

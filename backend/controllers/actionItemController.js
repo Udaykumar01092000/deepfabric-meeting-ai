@@ -231,6 +231,16 @@ const updateActionItem = async (req, res) => {
             await notifyAssignment({ id: parseInt(id), owner, task_text: taskText || old.task_text }, old.meeting_id, null, true);
         }
 
+        // Notify if due date changed
+        if (dueDate !== undefined) {
+            const oldDueDateStr = old.due_date ? new Date(old.due_date).toISOString().split('T')[0] : null;
+            const newDueDateStr = dueDate ? new Date(dueDate).toISOString().split('T')[0] : null;
+            if (newDueDateStr !== oldDueDateStr) {
+                const { notifyDueDateChange } = require("../services/notificationService");
+                await notifyDueDateChange({ id: parseInt(id), owner: newOwner, task_text: taskText || old.task_text }, old.meeting_id, old.due_date, dueDate);
+            }
+        }
+
         res.json({ message: "Action item updated (marked as manually edited)" });
     } catch (error) {
         console.error("updateActionItem error:", error);

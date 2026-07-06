@@ -206,17 +206,17 @@ export default function MeetingDetail() {
     };
 
     return (
-        <div style={{ padding: "0 48px 48px" }} className="animate-fade-in">
+        <div className="responsive-page animate-fade-in">
             {/* Breadcrumb */}
             <Link to="/" style={{ display: "inline-flex", alignItems: "center", gap: "6px", color: "var(--text-secondary)", textDecoration: "none", fontSize: "14px", marginBottom: "16px" }}>
                 ← Back to Meetings
             </Link>
 
             {/* Header */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "24px", marginBottom: "32px", flexWrap: "wrap" }}>
+            <div className="page-header" style={{ alignItems: "flex-start", gap: "24px", marginBottom: "32px" }}>
                 <div>
                     <span style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--accent-primary)", fontWeight: 700 }}>Meeting Detail</span>
-                    <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "32px", fontWeight: 800, margin: "4px 0 0", letterSpacing: "-1px" }}>{meeting.title}</h1>
+                    <h1 className="page-title" style={{ fontFamily: "var(--font-heading)", fontSize: "32px", fontWeight: 800, margin: "4px 0 0", letterSpacing: "-1px" }}>{meeting.title}</h1>
                     <div style={{ display: "flex", gap: "12px", marginTop: "12px", flexWrap: "wrap", alignItems: "center" }}>
                         <span className="badge badge-indigo">ID: #{meetingId}</span>
                         <span style={{ fontSize: "13px", color: "var(--text-muted)" }}>
@@ -259,7 +259,7 @@ export default function MeetingDetail() {
             )}
 
             {/* Tabs */}
-            <div style={{ display: "flex", gap: "4px", background: "var(--bg-tertiary)", padding: "4px", borderRadius: "10px", marginBottom: "24px", flexWrap: "wrap" }}>
+            <div className="tabs-row">
                 {tabs.map(t => (
                     <button key={t.key} onClick={() => setActiveTab(t.key)}
                         style={{
@@ -285,7 +285,7 @@ export default function MeetingDetail() {
 
                     {showAddForm && (
                         <div className="glass-panel" style={{ padding: "20px", marginBottom: "20px", border: "1px solid var(--border-focus)" }}>
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                            <div className="add-form-grid">
                                 <input placeholder="Task description..." value={newItem.taskText} onChange={e => setNewItem({ ...newItem, taskText: e.target.value })} className="form-input" style={{ gridColumn: "1 / -1" }} />
                                 <select value={newItem.owner} onChange={e => setNewItem({ ...newItem, owner: e.target.value })} className="form-input" style={{ background: "var(--bg-secondary)" }}>
                                     <option value="">Select Owner</option>
@@ -331,7 +331,7 @@ export default function MeetingDetail() {
                                         /* Editing mode */
                                         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                                             <input value={editForm.taskText} onChange={e => setEditForm({ ...editForm, taskText: e.target.value })} className="form-input" />
-                                            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px" }}>
+                                            <div className="edit-grid" style={{ gap: "10px" }}>
                                                 <select value={editForm.owner} onChange={e => setEditForm({ ...editForm, owner: e.target.value })} className="form-input" style={{ background: "var(--bg-secondary)" }}>
                                                     {participants.map((p: string) => <option key={p} value={p}>{p}</option>)}
                                                     <option value="Unassigned">Unassigned</option>
