@@ -5,6 +5,7 @@ const db = require("../db");
 const { computeSemanticKey } = require("../services/semanticMatcher");
 const { logAudit } = require("../services/auditService");
 const { notifyAssignment } = require("../services/notificationService");
+const { matchesOwner, isUnassignedOwner } = require("../services/inboxOwnerMatcher");
 
 /**
  * GET /api/action-items — List action items with optional filters
@@ -46,61 +47,45 @@ const getInbox = async (req, res) => {
             return res.status(400).json({ error: "owner query parameter is required" });
         }
 
-        // My actions due this week
-        const [dueThisWeek] = await db.execute(
-            `SELECT ai.*, m.title as meeting_title FROM action_items ai 
+        const [allOpenItems] = await db.execute(
+            `SELECT ai.*, m.title as meeting_title FROM action_items ai
              LEFT JOIN meetings m ON ai.meeting_id = m.id
-             WHERE ai.owner = ? AND ai.status != 'done'
-               AND ai.due_date BETWEEN CURDATE() AND CURDATE() + INTERVAL 7 DAY
-             ORDER BY ai.due_date ASC`,
-            [owner]
+             WHERE ai.status != 'done'
+             ORDER BY ai.due_date ASC, ai.created_at DESC`
         );
 
-        // Unassigned actions needing owner
-        const [unassigned] = await db.execute(
-            `SELECT ai.*, m.title as meeting_title FROM action_items ai 
-             LEFT JOIN meetings m ON ai.meeting_id = m.id
-             WHERE (ai.owner = 'Unassigned' OR ai.owner = '' OR ai.owner IS NULL)
-               AND ai.status != 'done'
-             ORDER BY ai.created_at DESC`
+        const [userRows] = await db.execute(
+            `SELECT name FROM users WHERE name IS NOT NULL AND TRIM(name) != '' ORDER BY name ASC`
         );
+        const knownUserNames = userRows.map(row => String(row.name).trim()).filter(Boolean);
+        const ownerCandidates = [...new Set([owner, ...knownUserNames].filter(Boolean))];
 
-        // Follow-ups from decisions (tasks linked to decisions assigned to this user)
-        const [followUps] = await db.execute(
-            `SELECT ai.*, d.statement as decision_statement, m.title as meeting_title FROM action_items ai 
-             INNER JOIN decisions d ON ai.decision_id = d.id
-             LEFT JOIN meetings m ON ai.meeting_id = m.id
-             WHERE ai.owner = ? AND ai.status != 'done'
-             ORDER BY ai.due_date ASC, ai.created_at DESC`,
-            [owner]
-        );
+        const myItems = allOpenItems.filter(item => ownerCandidates.some(candidate => matchesOwner(item.owner, candidate)));
+        const unassigned = allOpenItems.filter(item => isUnassignedOwner(item.owner));
 
-        // Overdue items
-        const [overdue] = await db.execute(
-            `SELECT ai.*, m.title as meeting_title FROM action_items ai 
-             LEFT JOIN meetings m ON ai.meeting_id = m.id
-             WHERE ai.owner = ? AND ai.status != 'done'
-               AND ai.due_date < CURDATE()
-             ORDER BY ai.due_date ASC`,
-            [owner]
-        );
+        const today = new Date();
+        const weekEnd = new Date(today);
+        weekEnd.setDate(today.getDate() + 7);
 
-        // All my items
-        const [allMyItems] = await db.execute(
-            `SELECT ai.*, m.title as meeting_title FROM action_items ai 
-             LEFT JOIN meetings m ON ai.meeting_id = m.id
-             WHERE ai.owner = ? AND ai.status != 'done'
-             ORDER BY ai.due_date ASC`,
-            [owner]
-        );
+        const dueThisWeek = myItems.filter(item => {
+            if (!item.due_date) return false;
+            const dueDate = new Date(item.due_date);
+            return dueDate >= today && dueDate <= weekEnd;
+        });
 
-        // No parsing needed for action items
-        const parsedFollowUps = followUps;
+        const overdue = myItems.filter(item => {
+            if (!item.due_date) return false;
+            const dueDate = new Date(item.due_date);
+            return dueDate < today;
+        });
+
+        const allMyItems = myItems;
+        const followUps = myItems.filter(item => item.decision_id !== null);
 
         res.json({
             dueThisWeek,
             unassigned,
-            followUps: parsedFollowUps,
+            followUps,
             overdue,
             allMyItems,
             summary: {
