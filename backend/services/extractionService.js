@@ -167,7 +167,8 @@ const DECISION_PATTERNS = [
     /\bagreed\s+(?:on|to|that)\s+(.+?)(?:\.|$)/gim,
     /\b(?:we(?:'ll|'ll)?\s+)?go\s+with\s+(.+?)(?:\.|$)/gim,
     /\bthe\s+decision\s+is\s+(?:to\s+)?(.+?)(?:\.|$)/gim,
-    /\blet(?:'s|'s)\s+(?:go\s+(?:ahead\s+)?(?:with|and)\s+)?(.+?)(?:\.|$)/gim,
+    /\b((?:the\s+)?[A-Z][\w\s]{1,80}?\s+will\s+be\s+(?:postponed|delayed|rescheduled|moved|advanced|deferred|cancelled|released).*?)(?:\.|$)/gim,
+    /\blet(?:'s|'s)\s+go\s+(?:ahead\s+)?(?:with|and)\s+(.+?)(?:\.|$)/gim,
     /\bwe\s+(?:should|will|are\s+going\s+to)\s+(?:go\s+(?:ahead\s+)?(?:with|and)\s+)(.+?)(?:\.|$)/gim,
     /\bfinal(?:ized?|ly)\s+(?:on|that|decided)\s+(.+?)(?:\.|$)/gim,
 ];
@@ -189,6 +190,9 @@ function extractDecisions(rawContent, participants = []) {
         while ((match = pattern.exec(rawContent)) !== null) {
             let statement = match[1].trim();
             if (!statement || statement.length < 5) continue;
+
+            const normalized = statement.toLowerCase();
+            if (/^(make a decision|decide (?:today|now)|let's make a decision today|let's decide today|need to decide|we should decide today)/.test(normalized)) continue;
 
             statement = statement.charAt(0).toUpperCase() + statement.slice(1);
             const key = computeSemanticKey(statement);
