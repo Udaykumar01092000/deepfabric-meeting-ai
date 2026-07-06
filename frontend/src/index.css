@@ -327,7 +327,7 @@ body {
   transition: transform var(--transition-fast), box-shadow var(--transition-normal), border-color var(--transition-fast);
   position: relative;
   overflow: hidden;
-  aspect-ratio: 1 / 0.92;
+  aspect-ratio: auto;
 }
 
 .meeting-card::before {
