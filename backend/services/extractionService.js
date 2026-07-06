@@ -13,8 +13,14 @@
  *   No external LLM/AI API is called. The patterns were designed
  *   to handle common meeting transcript formats.
  */
-const { computeSemanticKey } = require("./semanticMatcher");
+const { computeSemanticKey, normalizeOwnerName } = require("./semanticMatcher");
 const { parseDatePhrase } = require("./dateParser");
+
+const INVALID_OWNER_TOKENS = new Set([
+    "next", "sure", "okay", "ok", "yes", "no", "today", "tomorrow",
+    "everyone", "team", "all", "let", "lets", "let's", "please",
+    "then", "also", "maybe", "hello", "hi", "thank", "thanks",
+]);
 
 // ============================================================
 // ACTION ITEM EXTRACTION
@@ -111,7 +117,9 @@ function extractActionItems(rawContent, participants = []) {
         let match;
 
         while ((match = pattern.regex.exec(rawContent)) !== null) {
-            const owner = pattern.getOwner(match, null);
+            const speakerContext = findSpeakerNameForPosition(match.index, speakerMap);
+            const rawOwner = pattern.getOwner(match, speakerContext);
+            let owner = normalizeExtractedOwner(rawOwner, participants);
             let taskText = pattern.getText(match);
 
             // Clean up task text
@@ -326,6 +334,38 @@ function cleanTaskText(text) {
         .replace(/\s+/g, " ")
         .replace(/[,;:]+$/, "")
         .trim();
+}
+
+function cleanOwnerName(name) {
+    if (!name) return "";
+    return String(name)
+        .replace(/^[^\w]+|[^\w]+$/g, "")
+        .trim();
+}
+
+function findSpeakerNameForPosition(position, speakerMap) {
+    if (!speakerMap || speakerMap.length === 0) return null;
+    let speaker = null;
+    for (const entry of speakerMap) {
+        if (entry.position <= position) speaker = entry.name;
+        else break;
+    }
+    return speaker;
+}
+
+function normalizeExtractedOwner(rawOwner, participants = []) {
+    const owner = cleanOwnerName(rawOwner);
+    if (!owner) return "Unassigned";
+    if (/^team$/i.test(owner)) return "Team";
+    if (INVALID_OWNER_TOKENS.has(owner.toLowerCase())) return "Unassigned";
+
+    if (participants && participants.length > 0) {
+        const ownerResult = normalizeOwnerName(owner, participants);
+        if (ownerResult.confidence >= 0.7) return ownerResult.name;
+        return "Unassigned";
+    }
+
+    return /^[A-Z][a-z]+(?:\s[A-Z][a-z]+)?$/.test(owner) ? owner : "Unassigned";
 }
 
 /**
