@@ -109,7 +109,7 @@ function extractActionItems(rawContent, participants = []) {
     const lines = rawContent.split("\n");
 
     // First, build a speaker context map: line → speaker name
-    const speakerMap = buildSpeakerMap(rawContent);
+    const speakerMap = buildSpeakerMap(rawContent, participants);
 
     for (const pattern of ACTION_PATTERNS) {
         // Reset regex lastIndex
@@ -291,14 +291,23 @@ function extractRisks(rawContent) {
  * Build a map of character positions to speaker names.
  * Parses patterns like "John:", "Sara:", "Speaker Name:"
  */
-function buildSpeakerMap(text) {
-    const speakerPattern = /^([A-Z][a-z]+(?:\s[A-Z][a-z]+)?)\s*:/gm;
+function buildSpeakerMap(text, participants = []) {
+    const speakerPattern = /\b([A-Z][a-z]+(?:\s[A-Z][a-z]+)?)\s*:/g;
     const speakers = [];
     let match;
 
     while ((match = speakerPattern.exec(text)) !== null) {
+        const name = match[1];
+        if (participants && participants.length > 0) {
+            const hasMatch = participants.some(p => {
+                const pLower = p.toLowerCase();
+                const nLower = name.toLowerCase();
+                return pLower.includes(nLower) || nLower.includes(pLower);
+            });
+            if (!hasMatch) continue;
+        }
         speakers.push({
-            name: match[1],
+            name: name,
             position: match.index,
         });
     }
